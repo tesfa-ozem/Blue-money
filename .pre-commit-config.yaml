@@ -1,4 +1,14 @@
 repos:
+  # - repo: local
+  #   hooks:
+  #     - id: pytest-check
+  #       name: pytest-check
+  #       stages: [commit]
+  #       types: [python]
+  #       entry: pytest
+  #       language: system
+  #       pass_filenames: false
+  #       always_run: true
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:

@@ -9,7 +9,7 @@ client = TestClient(app)
 def test_registration():
     mutation = """
     mutation {
-        register(email: "alphatesfa789@gmail.com", password: "Abbc18") {
+        register(email: "romanotesfa777@hotmail.com", password: "Abbc18") {
             id
             email
         }
@@ -25,17 +25,17 @@ def test_registration():
 
 def test_login():
     mutation = """
-    mutation = {
-    login(email:"alphatesfa789@gmail.com", password:"Abbc18"){
-   ... on LoginSuccess {
+    mutation {
+        login(email:"alphatesfa789@gmail.com", password:"Abbc18"){
+            ... on LoginSuccess {
 
-    accessToken
-    refreshToken
-    }
-    ... on LoginError {
-      message
-    }
-  }
+                accessToken
+                refreshToken
+            }
+            ... on LoginError {
+                message
+            }
+        }
     }
     """
     response = client.post("/graphql", json={"query": mutation})
