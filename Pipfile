@@ -12,6 +12,7 @@ pymongo = "*"
 pyjwt = "*"
 passlib = "*"
 pre-commit = "*"
+pytest = "*"
 
 [dev-packages]
 
