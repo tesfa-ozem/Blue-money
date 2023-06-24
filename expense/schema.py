@@ -26,7 +26,7 @@ class ExpenseFrequency(Enum):
 # Expense
 @strawberry.type
 class Expense:
-    expense_id: str
+    user_id: str
     category_id: str
     description: str
     reference: str
@@ -57,7 +57,6 @@ class ExpenseFileInput:
 @strawberry.type
 class Success:
     message: str
-    response: str
 
 
 @strawberry.type

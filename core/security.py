@@ -2,12 +2,14 @@
 from datetime import datetime
 
 import jwt
+from auth.schema import User
 from config import (
     ACCESS_TOKEN_EXPIRY,
     ALGORITHM,
     REFRESH_TOKEN_EXPIRY,
     SECRET_KEY,
 )
+from db.services import get_user_by_id
 from passlib.context import CryptContext
 
 
@@ -15,12 +17,18 @@ pwd_context = CryptContext(schemes=["bcrypt"])
 
 
 def generate_access_token(user_id: str) -> str:
-    payload = {"user_id": user_id, "exp": datetime.utcnow() + ACCESS_TOKEN_EXPIRY}
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + ACCESS_TOKEN_EXPIRY,
+    }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
 def generate_refresh_token(user_id: str) -> str:
-    payload = {"user_id": user_id, "exp": datetime.utcnow() + REFRESH_TOKEN_EXPIRY}
+    payload = {
+        "user_id": user_id,
+        "exp": datetime.utcnow() + REFRESH_TOKEN_EXPIRY,
+    }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -62,3 +70,20 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+
+
+def authorize(token: str) -> User | None:
+    if not token:
+        raise Exception("No token passed")
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id = decoded_token.get("user_id")
+        # Fetch user from database based on user_id
+        user = get_user_by_id(user_id)
+        return user
+    except jwt.ExpiredSignatureError:
+        # Handle token expiration error
+        raise Exception("Invalid or expired access token")
+    except jwt.InvalidTokenError:
+        # Handle invalid token error
+        raise Exception("Invalid access token")

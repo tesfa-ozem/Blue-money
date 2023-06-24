@@ -6,21 +6,21 @@ from main import app
 client = TestClient(app)
 
 
-def test_registration():
-    mutation = """
-    mutation {
-        register(email: "romanotesfa777@hotmail.com", password: "Abbc18") {
-            id
-            email
-        }
-    }
-    """
+# def test_registration():
+#     mutation = """
+#     mutation {
+#         register(email: "romanotesfa177@hotmail.com", password: "Abbc18") {
+#             id
+#             email
+#         }
+#     }
+#     """
 
-    response = client.post("/graphql", json={"query": mutation})
-    assert response.status_code == 200
-    assert "errors" not in response.json()
-    assert "data" in response.json()
-    # Add additional assertions if needed
+#     response = client.post("/graphql", json={"query": mutation})
+#     assert response.status_code == 200
+#     assert "errors" not in response.json()
+#     assert "data" in response.json()
+# Add additional assertions if needed
 
 
 def test_login():

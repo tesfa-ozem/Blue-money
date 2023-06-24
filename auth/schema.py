@@ -7,8 +7,6 @@ class User:
     id: str
     email: str
 
-    # Add any other fields related to the user
-
 
 # Define your authentication token model
 

@@ -34,8 +34,22 @@ class PDFFileReader(FileReader):
 
         # Concatenate all DataFrames into a single DataFrame
         concatenated_df = pd.concat(dataframes, ignore_index=True)
+        new_column_names = {
+            "Receipt No": "reference",
+            "Completion Time": "time",
+            "Details": "details",
+            "Transaction Status": "status",
+            "Paid in": "paid_in",
+            "Withdraw\rn": "paid_out",
+            "Balance": "balance",
+        }
+        renamed_df = concatenated_df.rename(columns=new_column_names)
+        processed_df = renamed_df.applymap(
+            lambda x: x.replace("\r", "") if isinstance(x, str) else x
+        )
+        clean_df = processed_df.drop("Unnamed: 0", axis=1)
 
-        return concatenated_df
+        return clean_df
 
 
 @dataclass
@@ -86,9 +100,9 @@ class FileProcessor:
 
     def process_file(self, file_path):
         reader = self.factory.create_file_reader()
-        data = reader.read_file(file_path)
+        df = reader.read_file(file_path)
         # Process the data as needed
-        return data
+        return df
 
 
 # # Usage example
