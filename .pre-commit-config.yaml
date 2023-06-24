@@ -44,11 +44,11 @@ repos:
     hooks:
       - id: black
         args: [--line-length=80]
-  # - repo: https://github.com/miki725/importanize/
-  #   rev: '0.8.0-alpha2'
-  #   hooks:
-  #     - id: importanize
-  #       args: [--length=80, --verbose]
+  - repo: https://github.com/miki725/importanize/
+    rev: '0.8.0-alpha2'
+    hooks:
+      - id: importanize
+        args: [--length=80, --verbose, --print]
 
 
 # exclude: '^venv/'
