@@ -21,14 +21,28 @@ class FileReader(ABC):
 class PDFFileReader(FileReader):
     def read_file(self, file_path: typing.Union[str, bytes]):
         try:
+            first_table = tabula.read_pdf(
+                io.BytesIO(file_path),
+                pages=1,
+                stream=True,
+                lattice=True,
+                guess=False,
+                area=[336.8, 0.0, 740.0, 595.0],
+            )
             tables = tabula.read_pdf(
-                io.BytesIO(file_path), pages="all", stream=True, lattice=True
+                io.BytesIO(file_path),
+                pages="all",
+                stream=True,
+                lattice=True,
+                guess=False,
+                area=[5.8, 0.0, 740.0, 595.0],
             )
         except Exception as e:
             logging.error(e)
             return None
         dataframes = []
-        for i in range(1, len(tables)):
+        dataframes.append(first_table[0])
+        for i in range(2, len(tables)):
             df = pd.DataFrame(tables[i])
             dataframes.append(df)
 
@@ -48,7 +62,7 @@ class PDFFileReader(FileReader):
             lambda x: x.replace("\r", "") if isinstance(x, str) else x
         )
         clean_df = processed_df.drop("Unnamed: 0", axis=1)
-
+        clean_df.fillna("0.0", inplace=True)
         return clean_df
 
 

@@ -21,6 +21,7 @@ def add_user_service(email: str, password: str) -> User:
         hashed_pwd = hash_password(password)
         db = get_mongo_db()
         collection = db["users"]
+        collection.create_index([("email", 1)], unique=True)
         # Check if the email already exists in the collection
         existing_user = collection.find_one({"email": email})
         if existing_user:

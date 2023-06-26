@@ -1,46 +1,37 @@
 # -*- coding: utf-8 -*-
 import io
-
-from PyPDF2 import PdfReader, PdfWriter
-from strawberry.file_uploads import Upload
+from PyPDF2 import PdfWriter
 
 
-async def decrypt_pdf(upload_file: Upload, password: str) -> Upload:
-    # Create a new in-memory byte stream to hold the decrypted PDF content
-    decrypted_content = io.BytesIO()
+async def decrypt_pdf(pdf_reader, password: str):
+    try:
+        # Create a new in-memory byte stream to hold the decrypted PDF content
+        decrypted_content = io.BytesIO()
 
-    # Read the contents of the Upload as bytes
-    file_bytes = await upload_file.read()
+        # Decrypt the PDF file using the provided password
+        if pdf_reader.decrypt(password):
+            # Create a new PyPDF2 PdfFileWriter object for the decrypted content
+            pdf_writer = PdfWriter()
 
-    # Load the PDF content into a PyPDF2 PdfReader object
-    pdf_reader = PdfReader(io.BytesIO(file_bytes))
+            # Copy all the pages from the decrypted
+            # PDF to the PdfFileWriter object
+            for page_number in range(len(pdf_reader.pages)):
+                page = pdf_reader.pages[page_number]
+                pdf_writer.add_page(page)
 
-    # Check if the PDF file is encrypted
+            # Write the decrypted content to the decrypted_content byte stream
+            pdf_writer.write(decrypted_content)
 
-    # Decrypt the PDF file using the provided password
-    if pdf_reader.decrypt(password):
-        # Create a new PyPDF2 PdfFileWriter object for the decrypted content
-        pdf_writer = PdfWriter()
+            # Set the position of the byte stream to the beginning
+            decrypted_content.seek(0)
 
-        # Copy all the pages from the decrypted PDF to the PdfFileWriter object
-        for page_num in range(len(pdf_reader.pages)):
-            pdf_writer.addPage(pdf_reader.getPage(page_num))
+            # Create a custom Upload object with necessary attributes
 
-        # Write the decrypted content to the decrypted_content byte stream
-        pdf_writer.write(decrypted_content)
+            return decrypted_content.getvalue()
+        else:
+            raise Exception("The password is incorrect.")
 
-        # Set the position of the byte stream to the beginning
-        decrypted_content.seek(0)
-
-        # Create a new UploadFile object with the decrypted content
-        decrypted_upload_file = Upload(
-            filename=upload_file.filename, content_type=upload_file.content_type
-        )
-        decrypted_upload_file.file.write(decrypted_content)
-
-        return decrypted_upload_file
-    else:
-        raise Exception("The password is incorrect.")
-
-    # If the PDF is not encrypted, return the original UploadFile object
-    return upload_file
+    except Exception as e:
+        # Handle any exceptions that occur during decryption
+        # e.g., invalid PDF format, decryption error, etc.
+        raise Exception("Failed to decrypt PDF: " + str(e))

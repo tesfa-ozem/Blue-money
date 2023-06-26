@@ -11,9 +11,13 @@ from file_processing.file_processing import (
     PDFFileReaderFactory,
     XLSXFileReaderFactory,
 )
+from file_processing.file_utilities import decrypt_pdf
 from strawberry.file_uploads import Upload
 from strawberry.permission import BasePermission
 from strawberry.types import Info
+from PyPDF2 import PdfReader
+import io
+import pymongo.errors
 
 
 class IsAuthenticated(BasePermission):
@@ -64,10 +68,19 @@ async def read_expense_files(self, info: Info, file: Upload) -> Response:
         raise ValueError("Unsupported file type.")
 
     try:
+        # Read the contents of the Upload as bytes
         file_bytes = await file.read()
+
+        # Check if the PDF is encrypted
+        pdf_reader = PdfReader(io.BytesIO(file_bytes))
+        if pdf_reader.is_encrypted:
+            # Decrypt the PDF using the provided password
+            file_bytes = await decrypt_pdf(pdf_reader, "474833")
+
     except Exception as e:
         logger.error(e)
         return Error(message="Failed to read file.")
+
     processor = FileProcessor(factory)
     data = processor.process_file(file_bytes)
 
@@ -81,9 +94,18 @@ async def read_expense_files(self, info: Info, file: Upload) -> Response:
     db = get_mongo_db()
     collection = db["expense"]
     try:
-        collection.insert_many(expense_data)
-    except Exception as e:
-        print(f"Error: {e}")
+        collection.insert_many(expense_data, ordered=False)
+    except pymongo.errors.BulkWriteError as e:
+        # Handle the duplicate key error
+        for error in e.details["writeErrors"]:
+            if error["code"] == 11000:
+                # Duplicate key error
+                # Handle or log the error as needed
+                print(f"Duplicate key error: {error['errmsg']}")
+            else:
+                # Other types of errors
+                # Handle or log the error as needed
+                print(f"Other error: {error['errmsg']}")
 
     return Success(message="File processed successfully.")
 
