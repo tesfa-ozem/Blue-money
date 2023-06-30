@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import List
+from typing import List, Dict
 
 from auth.schema import User
 
@@ -8,6 +8,7 @@ from bson.objectid import ObjectId
 from core.utility import validate_email
 from db.session import get_mongo_db
 from pymongo.errors import PyMongoError
+import pymongo.errors
 
 
 def add_user_service(email: str, password: str) -> User:
@@ -104,3 +105,22 @@ def update_user(user: User):
 def delete_user(uid: List[str]):
     # Delete a user or list of user
     ...
+
+
+def bulk_upload_data(collection: str, data: Dict, **config):
+    db = get_mongo_db()
+    collection = db[collection]
+    try:
+        collection.insert_many(data, **config)
+        return True
+    except pymongo.errors.BulkWriteError as e:
+        # Handle the duplicate key error
+        for error in e.details["writeErrors"]:
+            if error["code"] == 11000:
+                # Duplicate key error
+                # Handle or log the error as needed
+                print(f"Duplicate key error: {error['errmsg']}")
+            else:
+                # Other types of errors
+                # Handle or log the error as needed
+                print(f"Other error: {error['errmsg']}")

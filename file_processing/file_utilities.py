@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import io
 from PyPDF2 import PdfWriter
+from strawberry.file_uploads import Upload
 
 
 async def decrypt_pdf(pdf_reader, password: str):
@@ -35,3 +36,22 @@ async def decrypt_pdf(pdf_reader, password: str):
         # Handle any exceptions that occur during decryption
         # e.g., invalid PDF format, decryption error, etc.
         raise Exception("Failed to decrypt PDF: " + str(e))
+
+
+def validate_pdf_file(file: Upload):
+    # Validate file type
+    allowed_file_types = [
+        "text/csv",
+        "application/vnd.ms-excel",
+        "application/pdf",
+    ]
+    if file.content_type not in allowed_file_types:
+        return Exception(
+            "Invalid file type. Only CSV \
+            and XLSX files are accepted."
+        )
+
+    # Validate file size
+    max_file_size = 5 * 1024 * 1024  # 5 MB
+    if file.size > max_file_size:
+        return Exception("File size exceeds the limit of 5MB.")

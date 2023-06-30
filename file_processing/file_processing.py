@@ -4,6 +4,8 @@ import logging
 import typing
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from PyPDF2 import PdfReader
+from .file_utilities import decrypt_pdf
 
 import openpyxl
 import pandas as pd
@@ -19,10 +21,15 @@ class FileReader(ABC):
 
 @dataclass
 class PDFFileReader(FileReader):
-    def read_file(self, file_path: typing.Union[str, bytes]):
+    async def read_file(self, file_bytes: typing.Union[str, bytes]):
         try:
+            pdf_reader = PdfReader(io.BytesIO(file_bytes))
+            if pdf_reader.is_encrypted:
+                # Decrypt the PDF using the provided password
+                file_bytes = await decrypt_pdf(pdf_reader, "474833")
+
             first_table = tabula.read_pdf(
-                io.BytesIO(file_path),
+                io.BytesIO(file_bytes),
                 pages=1,
                 stream=True,
                 lattice=True,
@@ -30,7 +37,7 @@ class PDFFileReader(FileReader):
                 area=[336.8, 0.0, 740.0, 595.0],
             )
             tables = tabula.read_pdf(
-                io.BytesIO(file_path),
+                io.BytesIO(file_bytes),
                 pages="all",
                 stream=True,
                 lattice=True,
@@ -110,10 +117,16 @@ class XLSXFileReaderFactory(FileReaderFactory):
 
 @dataclass
 class FileProcessor:
-    factory: FileReaderFactory
+    file_type: str
+    file_factory = {
+        "application/pdf": PDFFileReaderFactory(),
+        "text/csv": CSVFileReaderFactory(),
+        "application/vnd.ms-excel": XLSXFileReaderFactory(),
+    }
 
     def process_file(self, file_path):
-        reader = self.factory.create_file_reader()
+        factory = self.file_factory.get(self.file_type)
+        reader = factory.create_file_reader()
         df = reader.read_file(file_path)
         # Process the data as needed
         return df
