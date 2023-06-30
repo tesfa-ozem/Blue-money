@@ -16,7 +16,6 @@ from strawberry.types import Info
 class IsAuthenticated(BasePermission):
     message = "User is not authenticated"
 
-    # This method can also be async!
     def has_permission(self, source: Any, info: Info, **kwargs) -> bool:
         if info.context.user:
             return True
