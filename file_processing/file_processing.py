@@ -55,16 +55,18 @@ class PDFFileReader(FileReader):
 
         # Concatenate all DataFrames into a single DataFrame
         concatenated_df = pd.concat(dataframes, ignore_index=True)
-        new_column_names = {
-            "Receipt No": "reference",
-            "Completion Time": "time",
-            "Details": "details",
-            "Transaction Status": "status",
-            "Paid in": "paid_in",
-            "Withdraw\rn": "paid_out",
-            "Balance": "balance",
-        }
-        renamed_df = concatenated_df.rename(columns=new_column_names)
+        df_columns = concatenated_df.columns.tolist()
+        new_column_names = [
+            "reference",
+            "time",
+            "details",
+            "status",
+            "paid_in",
+            "paid_out",
+            "balance",
+        ]
+        new_column_names_object = dict(zip(df_columns, new_column_names))
+        renamed_df = concatenated_df.rename(columns=new_column_names_object)
         processed_df = renamed_df.applymap(
             lambda x: x.replace("\r", "") if isinstance(x, str) else x
         )
