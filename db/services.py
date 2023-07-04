@@ -111,6 +111,11 @@ def bulk_upload_data(collection: str, data: Dict, **config):
     db = get_mongo_db()
     collection = db[collection]
     try:
+        index_info = collection.index_information()
+        if "reference_1_paid_out_1" not in index_info:
+            collection.create_index(
+                [("reference", 1), ("paid_out", 1)], unique=True, sparse=True
+            )
         collection.insert_many(data, **config)
         return True
     except pymongo.errors.BulkWriteError as e:

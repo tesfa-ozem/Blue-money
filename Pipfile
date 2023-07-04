@@ -16,6 +16,7 @@ pytest = "*"
 tabula-py = "*"
 openpyxl = "*"
 pypdf2 = "*"
+pymongoarrow = "*"
 
 [dev-packages]
 
