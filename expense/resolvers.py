@@ -3,8 +3,8 @@ import logging
 from typing import Any, List
 
 import strawberry
-from db.services import bulk_upload_data
 from expense.schema import ExpenseInput, Response, Success
+from expense.services import TxExpenseSevice
 from file_processing.file_processing import FileProcessor
 
 from file_processing.file_utilities import validate_pdf_file
@@ -41,14 +41,15 @@ async def read_expense_files(self, info: Info, file: Upload) -> Response:
     # Add user id to the data
     user_id = info.context.user.id
     data["user_id"] = user_id
-    expense_data = data.to_dict(orient="records")
+    tx_service = TxExpenseSevice()
+    await tx_service.process_and_save_tx(data=data)
+    # expense_data = data.to_dict(orient="records")
 
-    response = bulk_upload_data(
-        collection="expense", data=expense_data, ordered=False
-    )
-    if response:
-        return Success(message="File processed successfully.")
-    raise Exception("Failed to Upload data to db")
+    # response = bulk_upload_data(
+    #     collection="expense", data=expense_data, ordered=False
+    # )
+
+    return Success(message="File processed successfully.")
 
 
 @strawberry.mutation
