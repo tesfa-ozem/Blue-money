@@ -1,2 +1,3 @@
 # Ignore envfile
 .env
+.env_test
