@@ -64,4 +64,22 @@ class Error:
     message: str
 
 
+@strawberry.input
+class ExpenseTotals:
+    frequency: str
+    period: List[Optional[int]]
+
+
+@strawberry.type
+class ExpenseResponse:
+    _id: int
+    total_paid_in: int
+    total_paid_out: int
+
+
+@strawberry.type
+class ExpenseListRespones:
+    data: List[ExpenseResponse]
+
+
 Response = strawberry.union("Response", (Success, Error))

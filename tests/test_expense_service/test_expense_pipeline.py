@@ -43,14 +43,15 @@ def test_get_years(setup_collection):
 
 
 def test_month_aggregation(setup_collection):
-    collection = db["normal_tx"]
+    collection = "normal_tx"
     repo = TxExpenseSevice()
     # Call the function being tested
 
     result = repo.tx_totals_by_months(
-        collection=collection, year=2022, user_id="6489dde8db106c1248b2fe93"
+        collection=collection, year=2022, user_id="6497037713a21a1325296aae"
     )
     print(result)
 
-    # assert result[0]._id == 1
-    # assert result[11].total_paid_in == 0
+    assert len(result) == 12
+    assert result[0].get("total_paid_in") == 139_742
+    assert result[0].get("total_paid_out") == -147_631
