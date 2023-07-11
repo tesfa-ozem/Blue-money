@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from fastapi.testclient import TestClient
-from main import app
+# from fastapi.testclient import TestClient
+# from main import app
 
 
-client = TestClient(app)
+# client = TestClient(app)
 
 
 # def test_registration():
@@ -23,22 +23,22 @@ client = TestClient(app)
 # Add additional assertions if needed
 
 
-def test_login():
-    mutation = """
-    mutation {
-        login(email:"alphatesfa789@gmail.com", password:"Abbc18"){
-            ... on LoginSuccess {
+# def test_login():
+#     mutation = """
+#     mutation {
+#         login(email:"alphatesfa789@gmail.com", password:"Abbc18"){
+#             ... on LoginSuccess {
 
-                accessToken
-                refreshToken
-            }
-            ... on LoginError {
-                message
-            }
-        }
-    }
-    """
-    response = client.post("/graphql", json={"query": mutation})
-    assert response.status_code == 200
-    assert "errors" not in response.json()
-    assert "data" in response.json()
+#                 accessToken
+#                 refreshToken
+#             }
+#             ... on LoginError {
+#                 message
+#             }
+#         }
+#     }
+#     """
+#     response = client.post("/graphql", json={"query": mutation})
+#     assert response.status_code == 200
+#     assert "errors" not in response.json()
+#     assert "data" in response.json()

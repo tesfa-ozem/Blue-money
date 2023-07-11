@@ -185,3 +185,93 @@ class TxExpenseSevice:
             return results
         except Exception as e:
             raise Exception(str(e))
+
+    def get_years(self, collection) -> List[str]:
+        """
+        Returns a list of the available tranasction
+        priods in years present in the stored data
+        """
+
+        pipeline = [
+            {
+                "$project": {
+                    "year": {
+                        "$year": {
+                            "$dateFromString": {
+                                "dateString": "$time",
+                                "format": "%Y-%m-%d %H:%M:%S",
+                            }
+                        }
+                    }
+                }
+            },
+            {"$group": {"_id": "$year"}},
+        ]
+
+        result = list(collection.aggregate(pipeline))
+
+        return [str(doc["_id"]) for doc in result]
+
+    def tx_totals_by_months(self, collection, user_id: str, year: int):
+        """
+        Service for aggregating the totals for differen
+        periods
+        """
+
+        pipeline = [
+            {
+                "$project": {
+                    "id": "$_id",
+                    "user_id": "$user_id",
+                    "time": "$time",
+                    "paid_in": {
+                        "$cond": {
+                            "if": {"$gte": [{"$type": "$paid_in"}, "int"]},
+                            "then": "$paid_in",
+                            "else": {"$toInt": "$paid_in"},
+                        }
+                    },
+                    "paid_out": {
+                        "$cond": {
+                            "if": {"$gte": [{"$type": "$paid_out"}, "int"]},
+                            "then": "$paid_out",
+                            "else": {"$toInt": "$paid_out"},
+                        }
+                    },
+                    "year": {
+                        "$year": {
+                            "$dateFromString": {
+                                "dateString": "$time",
+                                "format": "%Y-%m-%d %H:%M:%S",
+                            }
+                        }
+                    },
+                    "month": {
+                        "$month": {
+                            "$dateFromString": {
+                                "dateString": "$time",
+                                "format": "%Y-%m-%d %H:%M:%S",
+                            }
+                        }
+                    },
+                }
+            },
+            {
+                "$match": {
+                    "year": year,
+                    "user_id": user_id,
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$month",
+                    "total_paid_in": {"$sum": "$paid_in"},
+                    "total_paid_out": {"$sum": "$paid_out"},
+                }
+            },
+            {"$sort": {"_id": 1}},
+        ]
+
+        results = list(collection.aggregate(pipeline))
+
+        return results

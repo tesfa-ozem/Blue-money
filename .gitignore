@@ -1,3 +1,4 @@
 # Ignore envfile
 .env
 .env_test
+test_data.json
