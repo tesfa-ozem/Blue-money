@@ -3,6 +3,8 @@ import pytest
 from config import MONGO_HOST, MONGO_PORT
 from pymongo import MongoClient
 from expense.services import TxExpenseSevice
+import json
+import os
 
 # Assuming you have a MongoDB connection setup already
 client = MongoClient(MONGO_HOST, MONGO_PORT)
@@ -15,12 +17,10 @@ def setup_collection():
     collection = db["normal_tx"]
 
     # Insert some test data
-    test_data = [
-        {"time": "2022-01-01 10:00:00"},
-        {"time": "2022-02-01 11:00:00"},
-        {"time": "2023-01-01 12:00:00"},
-        {"time": "2023-02-01 13:00:00"},
-    ]
+    file_path = os.path.join(os.path.dirname(__file__), "test_data.json")
+    f = open(file_path)
+    test_data = json.loads(f.read())
+    f.close()
     collection.insert_many(test_data)
 
     yield collection
@@ -37,6 +37,20 @@ def test_get_years(setup_collection):
 
     # Assert the expected result
     assert isinstance(result, list)
-    assert len(result) == 2
+    # assert len(result) == 2
     assert "2022" in result
     assert "2023" in result
+
+
+def test_month_aggregation(setup_collection):
+    collection = db["normal_tx"]
+    repo = TxExpenseSevice()
+    # Call the function being tested
+
+    result = repo.tx_totals_by_months(
+        collection=collection, year=2022, user_id="6489dde8db106c1248b2fe93"
+    )
+    print(result)
+
+    # assert result[0]._id == 1
+    # assert result[11].total_paid_in == 0

@@ -67,8 +67,19 @@ class PDFFileReader(FileReader):
         ]
         new_column_names_object = dict(zip(df_columns, new_column_names))
         renamed_df = concatenated_df.rename(columns=new_column_names_object)
+        # clean tabs
         processed_df = renamed_df.applymap(
             lambda x: x.replace("\r", " ") if isinstance(x, str) else x
+        )
+        # clean out comma separators
+        processed_df["paid_in"] = processed_df["paid_in"].apply(
+            lambda x: x if isinstance(x, float) else float(x.replace(",", ""))
+        )
+        processed_df["paid_out"] = processed_df["paid_out"].apply(
+            lambda x: x if isinstance(x, float) else float(x.replace(",", ""))
+        )
+        processed_df["balance"] = processed_df["balance"].apply(
+            lambda x: x if isinstance(x, float) else float(x.replace(",", ""))
         )
         clean_df = processed_df.drop("Unnamed: 0", axis=1)
         clean_df.fillna("0.0", inplace=True)
