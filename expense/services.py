@@ -185,3 +185,34 @@ class TxExpenseSevice:
             return results
         except Exception as e:
             raise Exception(str(e))
+
+    def get_years(self, collection) -> List[str]:
+        """
+        Returns a list of the available tranasction
+        priods in years present in the stored data
+        """
+
+        pipeline = [
+            {
+                "$project": {
+                    "year": {
+                        "$year": {
+                            "$dateFromString": {
+                                "dateString": "$time",
+                                "format": "%Y-%m-%d %H:%M:%S",
+                            }
+                        }
+                    }
+                }
+            },
+            {"$group": {"_id": "$year"}},
+        ]
+
+        result = list(collection.aggregate(pipeline))
+
+        return [str(doc["_id"]) for doc in result]
+
+    def tx_totals_by_period(
+        self, frequency: str, start_period: str, end_period: str
+    ):
+        ...
