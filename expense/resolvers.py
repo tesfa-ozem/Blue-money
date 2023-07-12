@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging
-from typing import Any, List
+from typing import Any
 
 import strawberry
-from expense.schema import ExpenseInput, Response, Success
+from expense.schema import (
+    ExpenseInput,
+    Response,
+    Success,
+    ExpenseListRespones,
+    ExpenseResponse,
+)
 from expense.services import TxExpenseSevice
 from file_processing.file_processing import FileProcessor
 
@@ -52,23 +58,26 @@ async def read_expense_files(self, info: Info, file: Upload) -> Response:
     return Success(message="File processed successfully.")
 
 
-@strawberry.mutation
-def bulk_create_expense(expense: List[ExpenseInput]) -> Response:
-    ...
+@strawberry.field(permission_classes=[IsAuthenticated])
+async def get_expense_totals(
+    self, info: Info, frequency: str, period: int
+) -> ExpenseListRespones:
+    collection = "normal_tx"
+    tx_service = TxExpenseSevice()
+    if "monthly" == frequency:
+        result = tx_service.tx_totals_by_months(
+            collection=collection, year=period, user_id=info.context.user.id
+        )
+    else:
+        result = ExpenseListRespones()
 
-
-@strawberry.mutation
-def update_expense() -> Response:
-    ...
-
-
-@strawberry.mutation
-def delete_expense() -> Response:
-    ...
-
-
-# Background task
-
-
-def save_expense():
-    ...
+    return ExpenseListRespones(
+        data=[
+            ExpenseResponse(
+                _id=x.get("_id"),
+                total_paid_in=x.get("total_paid_in"),
+                total_paid_out=x.get("total_paid_out"),
+            )
+            for x in result
+        ]
+    )

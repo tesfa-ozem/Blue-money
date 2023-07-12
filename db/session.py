@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
-from config import MONGO_DATABASE, MONGO_HOST, MONGO_PORT
+from config import (
+    MONGO_DATABASE,
+    MONGO_HOST,
+    MONGO_PORT,
+    ENVIRONMENT,
+    MONGO_URI,
+)
 from pymongo import MongoClient
+from pymongo.server_api import ServerApi
 
 
 def get_mongo_client():
-    # client = MongoClient(MONGO_URI, server_api=ServerApi("1"))
-    client = MongoClient(MONGO_HOST, MONGO_PORT)
+    if ENVIRONMENT == "development":
+        # client = MongoClient(MONGO_URI, server_api=ServerApi("1"))
+        client = MongoClient(MONGO_HOST, MONGO_PORT)
+    if ENVIRONMENT == "test":
+        client = MongoClient(MONGO_URI, server_api=ServerApi("1"))
     return client
 
 

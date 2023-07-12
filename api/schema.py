@@ -2,12 +2,15 @@
 import strawberry
 from auth.resolvers import add_user, login, refresh_token
 from auth.schema import LoginResult, User
-from expense.resolvers import read_expense_files
+from expense.schema import ExpenseListRespones
+from expense.resolvers import read_expense_files, get_expense_totals
 from strawberry.types import Info
 
 
 @strawberry.type
 class Query:
+    expenseTotals: ExpenseListRespones = get_expense_totals
+
     @strawberry.field
     def user(self, info: Info) -> User | None:
         return info.context.user

@@ -212,11 +212,13 @@ class TxExpenseSevice:
 
         return [str(doc["_id"]) for doc in result]
 
-    def tx_totals_by_months(self, collection, user_id: str, year: int):
+    def tx_totals_by_months(self, collection, user_id: str, year: int) -> List:
         """
         Service for aggregating the totals for differen
         periods
         """
+        db = get_mongo_db()
+        collection = db[collection]
 
         pipeline = [
             {

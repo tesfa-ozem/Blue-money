@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
+import os
+from decouple import AutoConfig, RepositoryEnv
 
-from decouple import Config, RepositoryEnv
-
-
+DOTENV_FILE = os.environ.get("DOTENV_FILE", "./.env")
 # Create a Config object and load variables from the .env file
-config = Config(
-    RepositoryEnv(
-        "/home/tesfa/projects/Services/blue_vault/ExpenseTracker/.env"
-    )
-)
+config = AutoConfig(RepositoryEnv(DOTENV_FILE))
 # Define configuration variables
 MONGO_HOST = config("MONGO_HOST", default="localhost")
 MONGO_PORT = config("MONGO_PORT", default=27017, cast=int)
@@ -19,3 +15,4 @@ SECRET_KEY = "your-secret-key"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRY = timedelta(minutes=config("ACCESS_TOKEN_EXPIRY", cast=int))
 REFRESH_TOKEN_EXPIRY = timedelta(days=config("REFRESH_TOKEN_EXPIRY", cast=int))
+ENVIRONMENT = config("ENVIRONMENT", default="development")
