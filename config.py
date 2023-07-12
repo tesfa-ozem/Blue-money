@@ -5,11 +5,7 @@ from decouple import Config, RepositoryEnv
 
 
 # Create a Config object and load variables from the .env file
-config = Config(
-    RepositoryEnv(
-        "/home/tesfa/projects/Services/blue_vault/ExpenseTracker/.env"
-    )
-)
+config = Config(RepositoryEnv("./.env"))
 # Define configuration variables
 MONGO_HOST = config("MONGO_HOST", default="localhost")
 MONGO_PORT = config("MONGO_PORT", default=27017, cast=int)

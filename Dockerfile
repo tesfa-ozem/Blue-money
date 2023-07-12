@@ -26,6 +26,7 @@ RUN pipenv install --deploy --system
 # Copy the application code to the working directory
 COPY . /app
 
+COPY .env /app/
 # Expose the application port
 EXPOSE 8000
 
