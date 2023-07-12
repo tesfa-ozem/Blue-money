@@ -3,9 +3,12 @@ from datetime import timedelta
 import os
 from decouple import AutoConfig, RepositoryEnv
 
-DOTENV_FILE = os.environ.get("DOTENV_FILE", "./.env")
-# Create a Config object and load variables from the .env file
-config = AutoConfig(RepositoryEnv(DOTENV_FILE))
+if os.environ.get("ENVIRONMENT", "development") == "development":
+    DOTENV_FILE = os.environ.get("DOTENV_FILE", "./.env")
+    # Create a Config object and load variables from the .env file
+    config = AutoConfig(RepositoryEnv(DOTENV_FILE))
+else:
+    from decouple import config
 # Define configuration variables
 MONGO_HOST = config("MONGO_HOST", default="localhost")
 MONGO_PORT = config("MONGO_PORT", default=27017, cast=int)
