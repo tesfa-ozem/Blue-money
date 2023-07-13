@@ -17,6 +17,7 @@ from file_processing.file_utilities import validate_pdf_file
 from strawberry.file_uploads import Upload
 from strawberry.permission import BasePermission
 from strawberry.types import Info
+from graphql import GraphQLError
 
 
 class IsAuthenticated(BasePermission):
@@ -38,24 +39,26 @@ def create_expense(expense: ExpenseInput) -> Response:
 
 @strawberry.mutation(permission_classes=[IsAuthenticated])
 async def read_expense_files(self, info: Info, file: Upload) -> Response:
-    validate_pdf_file(file)
-    file_bytes = await file.read()
+    try:
+        validate_pdf_file(file)
+        file_bytes = await file.read()
 
-    processor = FileProcessor(file.content_type)
-    data = await processor.process_file(file_bytes)
+        processor = FileProcessor(file.content_type)
+        data = await processor.process_file(file_bytes)
 
-    # Add user id to the data
-    user_id = info.context.user.id
-    data["user_id"] = user_id
-    tx_service = TxExpenseSevice()
-    await tx_service.process_and_save_tx(data=data)
-    # expense_data = data.to_dict(orient="records")
-
-    # response = bulk_upload_data(
-    #     collection="expense", data=expense_data, ordered=False
-    # )
-
-    return Success(message="File processed successfully.")
+        # Add user id to the data
+        user_id = info.context.user.id
+        data["user_id"] = user_id
+        tx_service = TxExpenseSevice()
+        await tx_service.process_and_save_tx(data=data)
+        return Success(message="File processed successfully.")
+    except Exception as e:
+        raise GraphQLError(
+            message=str(e),
+            extensions={
+                "error_code": 400,
+            },
+        )
 
 
 @strawberry.field(permission_classes=[IsAuthenticated])
