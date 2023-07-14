@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from strawberry.fastapi import BaseContext, GraphQLRouter
 from strawberry.types import Info as _Info
 from strawberry.types.info import RootValueType
+from fastapi.middleware.cors import CORSMiddleware
 
 
 class Context(BaseContext):
@@ -28,6 +29,21 @@ async def get_context() -> Context:
 
 
 app = FastAPI()
+
+origins = [
+    "http://localhost.tiangolo.com",
+    "https://localhost.tiangolo.com",
+    "http://localhost",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 graphql_app = GraphQLRouter(
     schema,

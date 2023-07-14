@@ -11,6 +11,7 @@ from config import (
 )
 from db.services import get_user_by_id
 from passlib.context import CryptContext
+from graphql import GraphQLError
 
 
 pwd_context = CryptContext(schemes=["bcrypt"])
@@ -46,22 +47,43 @@ def refresh_access_token(refresh_token: str) -> str:
         return access_token
     except jwt.ExpiredSignatureError:
         # Handle expired or invalid refresh tokens
-        raise Exception("Invalid or expired refresh token")
+        raise GraphQLError(
+            message="Refresh token has expired",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )
     except jwt.DecodeError:
-        raise Exception("Invalid refresh token")
+        raise GraphQLError(
+            message="Refresh token is invalid",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )
     except Exception as e:
         raise Exception(str(e))
 
 
 def decode_jwt_token(token: str) -> dict:
     try:
+        token = token.replace("Bearer ", "", 1)
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except jwt.ExpiredSignatureError:
         # Handle token expiration error
-        raise Exception("Invalid or expired access token")
+        raise GraphQLError(
+            message="Access token has expired",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )
     except jwt.InvalidTokenError:
         # Handle invalid token error
-        raise Exception("Invalid access token")
+        raise GraphQLError(
+            message="Access token is invalid",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )
 
 
 def hash_password(password: str) -> str:
@@ -74,8 +96,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def authorize(token: str) -> User | None:
     if not token:
-        raise Exception("No token passed")
+        raise GraphQLError(
+            message="Token not provided",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )
     try:
+        token = token.replace("Bearer ", "", 1)
         decoded_token = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         user_id = decoded_token.get("user_id")
         # Fetch user from database based on user_id
@@ -83,7 +111,17 @@ def authorize(token: str) -> User | None:
         return user
     except jwt.ExpiredSignatureError:
         # Handle token expiration error
-        raise Exception("Invalid or expired access token")
+        raise GraphQLError(
+            message="Access token has expired",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )
     except jwt.InvalidTokenError:
         # Handle invalid token error
-        raise Exception("Invalid access token")
+        raise GraphQLError(
+            message="Access token is invalid",
+            extensions={
+                "code": "FORBIDDEN",
+            },
+        )

@@ -18,9 +18,9 @@ def login(email: str, password: str) -> LoginResult:
     user = get_user(email)
     if user is None:
         return GraphQLError(
-            message="email not valid",
+            message="email or password is incorrect",
             extensions={
-                "error_code": 404,
+                "code": "UNAUTHORIZED",
             },
         )
 
@@ -30,7 +30,7 @@ def login(email: str, password: str) -> LoginResult:
         raise GraphQLError(
             message="email or password is incorrect",
             extensions={
-                "error_code": 401,
+                "code": "UNAUTHORIZED",
             },
         )
     user_id = str(user["_id"])
@@ -52,7 +52,7 @@ def refresh_token(refresh_token: str) -> AccessToken:
     except Exception as e:
         raise GraphQLError(
             message=str(e),
-            extensions={"error_code": 401, "error_type": "auth_error"},
+            extensions={"code": "FORBIDDEN"},
         )
 
 
@@ -63,7 +63,7 @@ def add_user(email: str, password: str) -> User:
         raise GraphQLError(
             message=message,
             extensions={
-                "error_code": 400,
+                "code": "BAD_REQUEST",
             },
         )
     inserted_user = add_user_service(email, password)
