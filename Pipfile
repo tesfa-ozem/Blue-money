@@ -17,6 +17,7 @@ tabula-py = "*"
 openpyxl = "*"
 pypdf2 = "*"
 pymongoarrow = "*"
+motor = "*"
 
 [dev-packages]
 
