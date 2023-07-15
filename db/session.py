@@ -15,10 +15,14 @@ def get_mongo_client():
     try:
         if ENVIRONMENT == "development":
             # client = MongoClient(MONGO_URI, server_api=ServerApi("1"))
-            client = MongoClient(MONGO_HOST, MONGO_PORT, directConnection=True)
+            client = MongoClient(
+                MONGO_HOST,
+                MONGO_PORT,
+            )
         if ENVIRONMENT == "test":
             client = MongoClient(
-                MONGO_URI, server_api=ServerApi("1"), directConnection=True
+                MONGO_URI,
+                server_api=ServerApi("1"),
             )
         client.server_info()
         return client
