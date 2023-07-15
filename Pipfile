@@ -18,6 +18,7 @@ openpyxl = "*"
 pypdf2 = "*"
 pymongoarrow = "*"
 motor = "*"
+sentry-sdk = {extras = ["fastapi"], version = "*"}
 
 [dev-packages]
 
